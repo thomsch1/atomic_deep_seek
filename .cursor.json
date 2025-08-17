@@ -1,0 +1,12 @@
+{
+    "terminal.integrated.defaultProfile.windows": "WSL",
+    "terminal.integrated.cwd": "~/dev/projects",
+    "remote.WSL.fileWatcher.polling": true,
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/subtree-cache/**": true,
+        "**/venv/**": true,
+        "**/__pycache__/**": true
+    }
+}

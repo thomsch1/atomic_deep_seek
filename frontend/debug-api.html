@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Debug</title>
+</head>
+<body>
+    <h1>API Connection Debug</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function testAPI() {
+            results.innerHTML += '<h2>Testing API connections...</h2>';
+            
+            const tests = [
+                { name: 'Direct Backend Health', url: 'http://localhost:8000/health' },
+                { name: 'Proxy API Health', url: '/api/health' },
+                { name: 'Relative Health', url: '/health' },
+                { name: 'Same Origin Health', url: `${location.protocol}//${location.host}/health` }
+            ];
+            
+            for (const test of tests) {
+                try {
+                    results.innerHTML += `<p>Testing ${test.name}: ${test.url}...</p>`;
+                    const response = await fetch(test.url);
+                    const data = await response.json();
+                    results.innerHTML += `<p>✅ ${test.name}: ${response.status} - ${JSON.stringify(data)}</p>`;
+                } catch (error) {
+                    results.innerHTML += `<p>❌ ${test.name}: ${error.message}</p>`;
+                }
+            }
+        }
+        
+        testAPI();
+    </script>
+</body>
+</html>
