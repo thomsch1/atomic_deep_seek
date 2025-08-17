@@ -6,6 +6,14 @@ import instructor
 import google.generativeai as genai
 
 
+class AgentConfig:
+    """Agent configuration class for compatibility."""
+    def __init__(self, client=None, temperature=1.0, max_retries=2):
+        self.client = client
+        self.temperature = temperature
+        self.max_retries = max_retries
+
+
 class Configuration(BaseModel):
     """The configuration for the agent."""
 

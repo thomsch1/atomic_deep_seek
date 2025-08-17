@@ -10,7 +10,7 @@ test/test_search_functions.py ........FF....F......                      [100%]
 =================================== FAILURES ===================================
 ___________________ TestSearchWeb.test_fallback_to_searchapi ___________________
 
-self = <test.test_search_functions.TestSearchWeb object at 0x7fe551ef4d50>
+self = <test.test_search_functions.TestSearchWeb object at 0x7fa8cd0b9050>
 mock_environment = {'GEMINI_API_KEY': 'test-gemini-key-12345', 'GOOGLE_API_KEY': 'test-google-key-12345', 'GOOGLE_SEARCH_ENGINE_ID': 'test-engine-id-12345', 'SEARCHAPI_API_KEY': 'test-searchapi-key-12345'}
 
     @pytest.mark.asyncio
@@ -49,7 +49,7 @@ test/test_search_functions.py:210: AssertionError
 🔄 Falling back to Google Custom Search API...
 __________________ TestSearchWeb.test_fallback_to_duckduckgo ___________________
 
-self = <test.test_search_functions.TestSearchWeb object at 0x7fe551eefed0>
+self = <test.test_search_functions.TestSearchWeb object at 0x7fa8cd0b1a90>
 mock_environment = {'GEMINI_API_KEY': 'test-gemini-key-12345', 'GOOGLE_API_KEY': 'test-google-key-12345', 'GOOGLE_SEARCH_ENGINE_ID': 'test-engine-id-12345', 'SEARCHAPI_API_KEY': 'test-searchapi-key-12345'}
 
     @pytest.mark.asyncio
@@ -90,7 +90,7 @@ test/test_search_functions.py:242: AssertionError
 🔄 Falling back to Google Custom Search API...
 _________________ TestSearchWeb.test_searchapi_non_200_status __________________
 
-self = <test.test_search_functions.TestSearchWeb object at 0x7fe551ef5e50>
+self = <test.test_search_functions.TestSearchWeb object at 0x7fa8cd0ba150>
 mock_environment = {'GEMINI_API_KEY': 'test-gemini-key-12345', 'GOOGLE_API_KEY': 'test-google-key-12345', 'GOOGLE_SEARCH_ENGINE_ID': 'test-engine-id-12345', 'SEARCHAPI_API_KEY': 'test-searchapi-key-12345'}
 
     @pytest.mark.asyncio
@@ -153,7 +153,7 @@ test/test_search_functions.py::TestRunAsyncSearch::test_run_async_search_running
   See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
 
 test/test_search_functions.py::TestRunAsyncSearch::test_run_async_search_with_num_results
-  /home/thomas/.local/lib/python3.11/site-packages/_pytest/unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <coroutine object AsyncMockMixin._execute_mock_call at 0x7fe551eeaf40>
+  /home/thomas/.local/lib/python3.11/site-packages/_pytest/unraisableexception.py:67: PytestUnraisableExceptionWarning: Exception ignored in: <coroutine object AsyncMockMixin._execute_mock_call at 0x7fa8cd0aef40>
   
   Traceback (most recent call last):
     File "<string>", line 1, in <lambda>
@@ -168,5 +168,5 @@ test/test_search_functions.py::TestRunAsyncSearch::test_run_async_search_with_nu
 FAILED test/test_search_functions.py::TestSearchWeb::test_fallback_to_searchapi
 FAILED test/test_search_functions.py::TestSearchWeb::test_fallback_to_duckduckgo
 FAILED test/test_search_functions.py::TestSearchWeb::test_searchapi_non_200_status
-================== 3 failed, 18 passed, 13 warnings in 0.29s ===================
+================== 3 failed, 18 passed, 13 warnings in 0.28s ===================
 [?1034h

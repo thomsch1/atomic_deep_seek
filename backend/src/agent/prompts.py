@@ -19,7 +19,7 @@ Instructions:
 Format: 
 - Format your response as a JSON object with ALL two of these exact keys:
    - "rationale": Brief explanation of why these queries are relevant
-   - "query": A list of search queries
+   - "queries": A list of search queries
 
 Example:
 
@@ -27,7 +27,7 @@ Topic: What revenue grew more last year apple stock or the number of people buyi
 ```json
 {{
     "rationale": "To answer this comparative growth question accurately, we need specific data points on Apple's stock performance and iPhone sales metrics. These queries target the precise financial information needed: company revenue trends, product-specific unit sales figures, and stock price movement over the same fiscal period for direct comparison.",
-    "query": ["Apple total revenue growth fiscal year 2024", "iPhone unit sales growth fiscal year 2024", "Apple stock price growth fiscal year 2024"],
+    "queries": ["Apple total revenue growth fiscal year 2024", "iPhone unit sales growth fiscal year 2024", "Apple stock price growth fiscal year 2024"],
 }}
 ```
 

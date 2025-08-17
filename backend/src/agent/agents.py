@@ -5,8 +5,8 @@ Atomic Agent implementations for the research workflow.
 import os
 from typing import List, Dict, Any, Optional
 from atomic_agents.agents.base_agent import BaseAgent, BaseAgentConfig
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai import types
 import httpx
 import asyncio
 from agent.state import (
@@ -208,22 +208,40 @@ async def search_with_gemini_grounding(query: str) -> Dict[str, Any]:
     try:
         client = get_genai_client()
         
-        # Define grounding tool (for Gemini 2.0+)
-        grounding_tool = types.Tool(
-            google_search=types.GoogleSearch()
-        )
+        # Define grounding tool (for Gemini 2.0+) with error handling
+        try:
+            grounding_tool = types.Tool(
+                google_search=types.GoogleSearch()
+            )
+        except AttributeError:
+            # Fallback if GoogleSearch is not available
+            return {
+                'status': 'error',
+                'error': 'GoogleSearch tool not available in current SDK version',
+                'grounding_used': False
+            }
         
         # Configure generation settings
-        config = types.GenerateContentConfig(
-            tools=[grounding_tool]
-        )
+        try:
+            config = types.GenerateContentConfig(
+                tools=[grounding_tool]
+            )
+        except AttributeError:
+            # Fallback if GenerateContentConfig is not available
+            config = None
         
         # Make the request
-        response = client.models.generate_content(
-            model="gemini-2.5-flash",
-            contents=f"Provide comprehensive information about: {query}",
-            config=config
-        )
+        if config:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"Provide comprehensive information about: {query}",
+                config=config
+            )
+        else:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"Provide comprehensive information about: {query}"
+            )
         
         # Check if grounding was used
         grounding_used = (hasattr(response, 'candidates') and 
@@ -493,16 +511,6 @@ class QueryGenerationAgent:
             return QueryGenerationOutput(
                 queries=[f"What is the capital of France?"],
                 rationale=f"Generated basic search query for: {input_data.research_topic}"
-            )
-        
-        # If result doesn't match expected format, create it manually
-        if hasattr(result, 'queries') and hasattr(result, 'rationale'):
-            return result
-        else:
-            # Fallback parsing for when atomic agent doesn't return structured output correctly
-            return QueryGenerationOutput(
-                queries=["fallback query"],  # This would need proper parsing
-                rationale="Generated via atomic agent"
             )
 
 
