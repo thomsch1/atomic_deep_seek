@@ -5,9 +5,19 @@ Tests web search functionality, grounding integration, and fallback mechanisms.
 
 import pytest
 import asyncio
+import warnings
 from unittest.mock import patch, MagicMock, AsyncMock
 import sys
 from pathlib import Path
+
+# Filter out Pydantic deprecation warnings for cleaner test output
+warnings.filterwarnings("ignore", category=DeprecationWarning, module="pydantic.*")
+warnings.filterwarnings("ignore", message=".*Support for class-based.*", category=DeprecationWarning)
+warnings.filterwarnings("ignore", message=".*Using extra keyword arguments.*", category=DeprecationWarning)
+# Filter out runtime warnings about unawaited coroutines from mock setup
+warnings.filterwarnings("ignore", message=".*coroutine.*was never awaited", category=RuntimeWarning)
+# Also filter warnings from unittest.mock
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="unittest.mock")
 
 # Add backend src to path
 backend_src = Path(__file__).parent.parent / "backend" / "src"
@@ -112,8 +122,9 @@ class TestWebSearchAgent:
             
             with patch('agent.agents.get_genai_client', return_value=mock_genai_client):
                 with MockGeminiTypes():
-                    with patch('asyncio.run') as mock_run:
-                        mock_run.return_value = {
+                    with patch('agent.agents.search_with_gemini_grounding', new_callable=AsyncMock) as mock_search_grounding:
+                        # Use AsyncMock to properly mock the async function
+                        mock_search_grounding.return_value = {
                             'status': 'success',
                             'response': mock_response,
                             'grounding_used': False,
@@ -211,8 +222,9 @@ class TestWebSearchAgent:
             
             with patch('agent.agents.get_genai_client', return_value=mock_genai_client):
                 with MockGeminiTypes():
-                    with patch('asyncio.run') as mock_run:
-                        mock_run.return_value = {
+                    with patch('agent.agents.search_with_gemini_grounding', new_callable=AsyncMock) as mock_search_grounding:
+                        # Use AsyncMock to properly mock the async function
+                        mock_search_grounding.return_value = {
                             'status': 'success',
                             'response': mock_grounding_response,
                             'grounding_used': True,
