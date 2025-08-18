@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field, field_validator
 from typing import Any, Optional, Dict, ClassVar
 from atomic_agents.agents.base_agent import BaseAgentConfig
 import instructor
-import google.generativeai as genai
+from google import genai
 from .logging_config import get_logger
 from .http_client import HTTPClientConfig
 
@@ -155,13 +155,14 @@ class Configuration(BaseModel):
             supported = ", ".join(self.get_supported_models())
             raise ValueError(f"Unsupported model '{model}'. Supported models are: {supported}")
         
-        # Configure Google GenerativeAI
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY"))
+        # Create Google GenAI client
+        api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+        genai_client = genai.Client(api_key=api_key)
         
-        # Create instructor client using the Gemini API
-        client = instructor.from_gemini(
-            client=genai.GenerativeModel(model),
-            mode=instructor.Mode.GEMINI_JSON
+        # Create instructor client using the new GenAI API
+        client = instructor.from_genai(
+            client=genai_client,
+            mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS
         )
         
         return AgentConfig(

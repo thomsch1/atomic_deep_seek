@@ -4,8 +4,8 @@ Gemini grounding search provider using Google's Gemini API with search integrati
 
 import os
 from typing import Dict, List, Any, Optional
-import google.generativeai as genai
-from google.generativeai import types
+from google import genai
+from google.genai import types
 
 from .base_provider import GroundingProvider, SearchResponse, SearchResult, SearchStatus
 from ..logging_config import AgentLogger
@@ -27,8 +27,7 @@ class GeminiSearchProvider(GroundingProvider):
                 self.logger.error("No API key found for Gemini client")
                 return
             
-            genai.configure(api_key=api_key)
-            self.client = True  # Just flag that configuration is successful
+            self.client = genai.Client(api_key=api_key)
             self.logger.info("Gemini client initialized successfully")
             
         except Exception as e:
@@ -37,12 +36,7 @@ class GeminiSearchProvider(GroundingProvider):
     
     def is_available(self) -> bool:
         """Check if Gemini search is available."""
-        if self.client is None:
-            return False
-        
-        # Check if required API key is present
-        api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
-        return bool(api_key)
+        return self.client is not None
     
     async def search(self, query: str, num_results: int = 5) -> SearchResponse:
         """

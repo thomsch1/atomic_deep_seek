@@ -6,6 +6,7 @@ import pytest
 import os
 from unittest.mock import patch, MagicMock
 from pydantic import ValidationError
+import instructor
 from agent.configuration import Configuration, AgentConfig
 from agent.http_client import HTTPClientConfig
 
@@ -144,38 +145,40 @@ class TestAgentConfigCreation:
     """Test agent configuration creation."""
     
     @patch.dict('os.environ', {'GEMINI_API_KEY': 'test_api_key'})
-    @patch('agent.configuration.genai.configure')
-    @patch('agent.configuration.instructor.from_gemini')
-    @patch('agent.configuration.genai.GenerativeModel')
-    def test_create_agent_config_success(self, mock_model, mock_instructor, mock_configure):
+    @patch('agent.configuration.genai.Client')
+    @patch('agent.configuration.instructor.from_genai')
+    def test_create_agent_config_success(self, mock_instructor, mock_client_class):
         """Test successful agent config creation."""
-        mock_client = MagicMock()
-        mock_instructor.return_value = mock_client
+        mock_genai_client = MagicMock()
+        mock_client_class.return_value = mock_genai_client
+        mock_instructor_client = MagicMock()
+        mock_instructor.return_value = mock_instructor_client
         
         config = Configuration()
         agent_config = config.create_agent_config()
         
         assert isinstance(agent_config, AgentConfig)
-        assert agent_config.client is mock_client
+        assert agent_config.client is mock_instructor_client
         assert agent_config.temperature == 1.0
         assert agent_config.max_retries == 2
         
-        mock_configure.assert_called_once_with(api_key='test_api_key')
-        mock_model.assert_called_once_with('gemini-2.5-flash')
+        mock_client_class.assert_called_once_with(api_key='test_api_key')
+        mock_instructor.assert_called_once_with(client=mock_genai_client, mode=instructor.Mode.GENAI_STRUCTURED_OUTPUTS)
     
     @patch.dict('os.environ', {'GOOGLE_API_KEY': 'google_test_key'})
-    @patch('agent.configuration.genai.configure')
-    @patch('agent.configuration.instructor.from_gemini')
-    @patch('agent.configuration.genai.GenerativeModel')
-    def test_create_agent_config_with_google_api_key(self, mock_model, mock_instructor, mock_configure):
+    @patch('agent.configuration.genai.Client')
+    @patch('agent.configuration.instructor.from_genai')
+    def test_create_agent_config_with_google_api_key(self, mock_instructor, mock_client_class):
         """Test agent config creation with Google API key."""
-        mock_client = MagicMock()
-        mock_instructor.return_value = mock_client
+        mock_genai_client = MagicMock()
+        mock_client_class.return_value = mock_genai_client
+        mock_instructor_client = MagicMock()
+        mock_instructor.return_value = mock_instructor_client
         
         config = Configuration()
         agent_config = config.create_agent_config()
         
-        mock_configure.assert_called_once_with(api_key='google_test_key')
+        mock_client_class.assert_called_once_with(api_key='google_test_key')
     
     def test_create_agent_config_unsupported_model(self):
         """Test agent config creation with unsupported model."""
@@ -185,30 +188,38 @@ class TestAgentConfigCreation:
             config.create_agent_config(model_override="unsupported-model")
     
     @patch.dict('os.environ', {'GEMINI_API_KEY': 'test_key'})
-    @patch('agent.configuration.genai.configure')
-    @patch('agent.configuration.instructor.from_gemini')
-    @patch('agent.configuration.genai.GenerativeModel')
-    def test_create_reflection_config(self, mock_model, mock_instructor, mock_configure):
+    @patch('agent.configuration.genai.Client')
+    @patch('agent.configuration.instructor.from_genai')
+    def test_create_reflection_config(self, mock_instructor, mock_client_class):
         """Test reflection config creation."""
+        mock_genai_client = MagicMock()
+        mock_client_class.return_value = mock_genai_client
+        mock_instructor_client = MagicMock()
+        mock_instructor.return_value = mock_instructor_client
+        
         config = Configuration(reflection_model="gemini-2.0-flash")
         
         reflection_config = config.create_reflection_config()
         
         assert isinstance(reflection_config, AgentConfig)
-        mock_model.assert_called_with('gemini-2.0-flash')
+        mock_client_class.assert_called_with(api_key='test_key')
     
     @patch.dict('os.environ', {'GEMINI_API_KEY': 'test_key'})
-    @patch('agent.configuration.genai.configure')
-    @patch('agent.configuration.instructor.from_gemini')
-    @patch('agent.configuration.genai.GenerativeModel')
-    def test_create_answer_config(self, mock_model, mock_instructor, mock_configure):
+    @patch('agent.configuration.genai.Client')
+    @patch('agent.configuration.instructor.from_genai')
+    def test_create_answer_config(self, mock_instructor, mock_client_class):
         """Test answer config creation."""
+        mock_genai_client = MagicMock()
+        mock_client_class.return_value = mock_genai_client
+        mock_instructor_client = MagicMock()
+        mock_instructor.return_value = mock_instructor_client
+        
         config = Configuration(answer_model="gemini-1.5-pro")
         
         answer_config = config.create_answer_config()
         
         assert isinstance(answer_config, AgentConfig)
-        mock_model.assert_called_with('gemini-1.5-pro')
+        mock_client_class.assert_called_with(api_key='test_key')
 
 
 class TestHTTPConfigCreation:

@@ -5,7 +5,7 @@ Simple test to verify Google Generative AI is working with the current API.
 
 import os
 from dotenv import load_dotenv
-import google.generativeai as genai
+from google import genai
 
 def main():
     """Test Gemini API configuration."""
@@ -21,16 +21,15 @@ def main():
     print(f"✅ API key found: {api_key[:10]}...")
     
     try:
-        # Configure GenAI
-        genai.configure(api_key=api_key)
-        print("✅ GenAI configured successfully")
-        
-        # Create a simple model
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
-        print(f"✅ Model created: {model}")
+        # Create GenAI client
+        client = genai.Client(api_key=api_key)
+        print("✅ GenAI client created successfully")
         
         # Test simple generation
-        response = model.generate_content("Say hello world in a friendly way")
+        response = client.models.generate_content(
+            model='gemini-2.0-flash-exp',
+            contents="Say hello world in a friendly way"
+        )
         print(f"✅ API call successful: {response.text[:50]}...")
         
         return 0
