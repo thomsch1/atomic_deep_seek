@@ -1,10 +1,14 @@
 import argparse
 import asyncio
+from dotenv import load_dotenv
 from agent.orchestrator import ResearchOrchestrator
 
 
 def main() -> None:
     """Run the research agent from the command line."""
+    # Load environment variables
+    load_dotenv()
+    
     parser = argparse.ArgumentParser(description="Run the LangGraph research agent")
     parser.add_argument("question", help="Research question")
     parser.add_argument(
@@ -35,7 +39,7 @@ def main() -> None:
     
     # Create orchestrator and run research
     orchestrator = ResearchOrchestrator(config_dict)
-    result = asyncio.run(orchestrator.arun_research(args.question))
+    result = asyncio.run(orchestrator.run_research_async(args.question))
     
     # Print the result
     print(result)

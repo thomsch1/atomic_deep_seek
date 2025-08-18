@@ -66,8 +66,8 @@ def mock_environment():
     }
     
     with patch.dict(os.environ, env_vars, clear=False):
-        # Also patch the module-level check that happens on import
-        with patch('agent.agents.os.getenv') as mock_getenv:
+        # Also patch the os.getenv calls in the modules that use them
+        with patch('os.getenv') as mock_getenv:
             def mock_getenv_func(key, default=None):
                 return env_vars.get(key, default)
             mock_getenv.side_effect = mock_getenv_func

@@ -16,12 +16,13 @@ from agent.citation import GroundingProcessor, CitationFormatter
 
 
 def get_genai_client():
-    """Get configured GenAI client."""
+    """Configure GenAI client."""
     import os
     api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("GEMINI_API_KEY or GOOGLE_API_KEY must be set")
-    return genai.Client(api_key=api_key)
+    genai.configure(api_key=api_key)
+    return None  # genai.configure() sets global state, no client object returned
 
 
 class WebSearchAgent(BaseResearchAgent[WebSearchInput, WebSearchOutput]):
@@ -30,7 +31,7 @@ class WebSearchAgent(BaseResearchAgent[WebSearchInput, WebSearchOutput]):
     def _initialize_agent_config(self) -> None:
         """Initialize the agent configuration."""
         self.agent_config = self.config.create_agent_config()
-        self.client = get_genai_client()
+        get_genai_client()  # Configure the global genai client
         self.search_manager = SearchManager()
         self.grounding_processor = GroundingProcessor()
         self.citation_formatter = CitationFormatter()

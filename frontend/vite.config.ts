@@ -23,11 +23,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''), // Remove /api prefix for backend
         configure: (proxy, options) => {
-          proxy.on('error', (err, req, res) => {
+          proxy.on('error', (err, _req, _res) => {
             console.log('proxy error', err);
           });
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            console.log('Proxying request:', req.method, req.url, '→', options.target + req.url.replace('/api', ''));
+          proxy.on('proxyReq', (_proxyReq, req, _res) => {
+            console.log('Proxying request:', req.method, req.url, '→', options.target + (req.url || '').replace('/api', ''));
           });
         }
       },

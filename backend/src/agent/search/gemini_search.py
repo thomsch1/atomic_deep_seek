@@ -27,7 +27,8 @@ class GeminiSearchProvider(GroundingProvider):
                 self.logger.error("No API key found for Gemini client")
                 return
             
-            self.client = genai.Client(api_key=api_key)
+            genai.configure(api_key=api_key)
+            self.client = True  # Just flag that configuration is successful
             self.logger.info("Gemini client initialized successfully")
             
         except Exception as e:
