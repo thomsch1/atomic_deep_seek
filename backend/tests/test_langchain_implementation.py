@@ -9,8 +9,8 @@ from unittest.mock import patch, MagicMock
 from typing import Dict, Any, List
 import json
 
-from agent.graph import graph
-from agent.state import OverallState
+from agent.orchestrator import ResearchOrchestrator
+from agent.state import ResearchState
 from agent.configuration import Configuration
 from agent.tools_and_schemas import SearchQueryList, Reflection
 from langchain_core.messages import HumanMessage, AIMessage
@@ -57,7 +57,7 @@ class TestLangChainImplementation:
 
     def test_query_generation_node(self, mock_env_vars, sample_initial_state, mock_configuration):
         """Test the query generation functionality."""
-        from agent.graph import generate_query
+        from agent.agents.query_generation_agent import QueryGenerationAgent
         
         # Mock the LLM response
         mock_llm_response = SearchQueryList(
@@ -82,7 +82,7 @@ class TestLangChainImplementation:
 
     def test_web_research_node(self, mock_env_vars, mock_configuration):
         """Test the web research functionality."""
-        from agent.graph import web_research
+        from agent.agents.web_search_agent import WebSearchAgent
         
         # Mock web search state
         web_search_state = {
@@ -117,7 +117,7 @@ class TestLangChainImplementation:
 
     def test_reflection_node(self, mock_env_vars, sample_initial_state, mock_configuration):
         """Test the reflection functionality."""
-        from agent.graph import reflection
+        from agent.agents.reflection_agent import ReflectionAgent
         
         # Prepare state with web research results
         state_with_results = sample_initial_state.copy()
@@ -152,7 +152,7 @@ class TestLangChainImplementation:
 
     def test_finalize_answer_node(self, mock_env_vars, sample_initial_state, mock_configuration):
         """Test the answer finalization functionality."""
-        from agent.graph import finalize_answer
+        from agent.agents.finalization_agent import FinalizationAgent
         
         # Prepare state with complete research results
         state_with_complete_results = sample_initial_state.copy()
@@ -187,7 +187,7 @@ class TestLangChainImplementation:
 
     def test_evaluate_research_routing(self, mock_configuration):
         """Test the research evaluation routing logic."""
-        from agent.graph import evaluate_research
+        from agent.orchestrator import ResearchOrchestrator
         
         # Test case: Research is sufficient
         sufficient_state = {

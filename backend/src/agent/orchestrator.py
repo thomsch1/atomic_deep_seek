@@ -9,12 +9,10 @@ import os
 from typing import List, Dict, Any, Optional
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from agent.agents import (
-    QueryGenerationAgent,
-    WebSearchAgent,
-    ReflectionAgent,
-    FinalizationAgent
-)
+from agent.agents.query_generation_agent import QueryGenerationAgent
+from agent.agents.web_search_agent import WebSearchAgent
+from agent.agents.reflection_agent import ReflectionAgent
+from agent.agents.finalization_agent import FinalizationAgent
 from agent.configuration import Configuration
 from agent.state import (
     ResearchState,

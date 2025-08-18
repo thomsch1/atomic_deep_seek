@@ -221,12 +221,14 @@ os.environ["GEMINI_API_KEY"] = "test-key"
 import sys
 sys.path.insert(0, "src")
 
-from agent.graph import graph
+from agent.orchestrator import ResearchOrchestrator
+from agent.configuration import Configuration
 
 # Check interface
-assert hasattr(graph, 'invoke')
-assert hasattr(graph, 'ainvoke')
-assert graph.name == "atomic-research-agent"
+config = Configuration()
+orchestrator = ResearchOrchestrator(config)
+assert hasattr(orchestrator, 'run_research')
+assert hasattr(orchestrator, 'arun_research')
 
 print("Compatibility layer OK")
 '''

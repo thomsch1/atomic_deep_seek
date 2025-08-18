@@ -1,6 +1,6 @@
 import argparse
-from agent.graph import graph
-from agent.state import Message
+import asyncio
+from agent.orchestrator import ResearchOrchestrator
 
 
 def main() -> None:
@@ -26,26 +26,19 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    state = {
-        "messages": [{"role": "user", "content": args.question}],
-        "initial_search_query_count": args.initial_queries,
+    # Create configuration dictionary
+    config_dict = {
+        "number_of_initial_queries": args.initial_queries,
         "max_research_loops": args.max_loops,
-        "reasoning_model": args.reasoning_model,
+        "answer_model": args.reasoning_model
     }
-
-    result = graph.invoke(state)
     
-    # Handle the new result format
-    if "final_answer" in result:
-        print(result["final_answer"])
-    else:
-        messages = result.get("messages", [])
-        if messages:
-            last_message = messages[-1]
-            if isinstance(last_message, dict):
-                print(last_message.get("content", ""))
-            else:
-                print(last_message.content)
+    # Create orchestrator and run research
+    orchestrator = ResearchOrchestrator(config_dict)
+    result = asyncio.run(orchestrator.arun_research(args.question))
+    
+    # Print the result
+    print(result)
 
 
 if __name__ == "__main__":

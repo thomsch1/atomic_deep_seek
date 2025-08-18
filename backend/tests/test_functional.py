@@ -116,9 +116,10 @@ def test_import_paths():
         # Don't actually create the orchestrator as it would try to initialize agents
         print("✅ Orchestrator import works")
         
-        # Test compatibility layer
-        from agent.graph import graph
-        print("✅ Graph compatibility layer import works")
+        # Test direct orchestrator usage
+        from agent.orchestrator import ResearchOrchestrator
+        from agent.configuration import Configuration
+        print("✅ Direct orchestrator import works")
         
         return True
         

@@ -14,7 +14,7 @@ from datetime import datetime
 # Add backend src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-from agent.agents import search_web
+from agent.search.search_manager import search_web
 from agent.profiling_orchestrator import create_profiling_orchestrator
 
 

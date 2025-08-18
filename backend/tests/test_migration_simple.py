@@ -182,11 +182,14 @@ def test_compatibility_interface():
     
     # This tests the graph.py compatibility wrapper
     with patch.dict(os.environ, {'GEMINI_API_KEY': 'test-key'}):
-        from agent.graph import graph
+        from agent.orchestrator import ResearchOrchestrator
+        from agent.configuration import Configuration
         
-        # Test that graph object exists and has the right interface
-        assert hasattr(graph, 'invoke')
-        assert hasattr(graph, 'ainvoke')
+        # Test that ResearchOrchestrator exists and can be instantiated
+        config = Configuration()
+        orchestrator = ResearchOrchestrator(config)
+        assert hasattr(orchestrator, 'run_research')
+        assert hasattr(orchestrator, 'arun_research')
         assert graph.name == "atomic-research-agent"
         
         print("✅ Compatibility interface working")
