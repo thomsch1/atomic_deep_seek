@@ -50,17 +50,33 @@ export default function App() {
     }
   }, [messages, isLoading, processedEventsTimeline]);
 
-  // Helper function to map effort levels (preserve original logic)
+  // Helper function to map effort levels (preserve original logic + add source quality)
   const mapEffortToParams = (effort: string) => {
     switch (effort) {
       case "low":
-        return { initial_search_query_count: 1, max_research_loops: 1 };
+        return { 
+          initial_search_query_count: 1, 
+          max_research_loops: 1,
+          source_quality_filter: null  // No source filtering for low effort
+        };
       case "medium":
-        return { initial_search_query_count: 3, max_research_loops: 3 };
+        return { 
+          initial_search_query_count: 3, 
+          max_research_loops: 3,
+          source_quality_filter: "medium"  // Medium quality sources and above
+        };
       case "high":
-        return { initial_search_query_count: 5, max_research_loops: 10 };
+        return { 
+          initial_search_query_count: 5, 
+          max_research_loops: 10,
+          source_quality_filter: "high"  // Only high quality sources
+        };
       default:
-        return { initial_search_query_count: 3, max_research_loops: 2 };
+        return { 
+          initial_search_query_count: 3, 
+          max_research_loops: 2,
+          source_quality_filter: null
+        };
     }
   };
 
@@ -116,15 +132,16 @@ export default function App() {
       setMessages(newMessages);
       
       try {
-        // Convert effort to parameters (same logic as original)
-        const { initial_search_query_count, max_research_loops } = mapEffortToParams(effort);
+        // Convert effort to parameters (including source quality filter)
+        const { initial_search_query_count, max_research_loops, source_quality_filter } = mapEffortToParams(effort);
         
         // Call backend
         const response = await api.conductResearch({
           question: submittedInputValue,
           initial_search_query_count,
           max_research_loops,
-          reasoning_model: model
+          reasoning_model: model,
+          source_quality_filter
         });
         
         // Create AI response message

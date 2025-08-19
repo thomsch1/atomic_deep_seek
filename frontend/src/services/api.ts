@@ -3,6 +3,8 @@ export interface Source {
   url: string;
   label?: string;
   content?: string;
+  source_credibility?: string;
+  domain_type?: string;
 }
 
 export interface ResearchRequest {
@@ -10,6 +12,7 @@ export interface ResearchRequest {
   initial_search_query_count?: number;
   max_research_loops?: number;
   reasoning_model?: string;
+  source_quality_filter?: string;
 }
 
 export interface ResearchResponse {

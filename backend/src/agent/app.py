@@ -32,6 +32,7 @@ class ResearchRequest(BaseModel):
     initial_search_query_count: Optional[int] = 3
     max_research_loops: Optional[int] = 2
     reasoning_model: Optional[str] = None
+    source_quality_filter: Optional[str] = None  # "high", "medium", "low", None
 
 
 class ResearchResponse(BaseModel):
@@ -49,7 +50,8 @@ async def conduct_research(request: ResearchRequest):
             request.question,
             initial_search_query_count=request.initial_search_query_count,
             max_research_loops=request.max_research_loops,
-            reasoning_model=request.reasoning_model
+            reasoning_model=request.reasoning_model,
+            source_quality_filter=request.source_quality_filter
         )
         
         return ResearchResponse(

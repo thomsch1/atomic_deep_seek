@@ -17,6 +17,8 @@ class Source(BaseModel):
     url: str = Field(description="URL of the source") 
     short_url: Optional[str] = Field(default=None, description="Shortened URL for token efficiency")
     label: Optional[str] = Field(default=None, description="Citation label")
+    source_credibility: Optional[str] = Field(default=None, description="Source credibility level: high, medium, low")
+    domain_type: Optional[str] = Field(default=None, description="Domain type: academic, commercial, news, official, other")
 
 
 class Citation(BaseModel):
@@ -36,6 +38,7 @@ class ResearchState(BaseModel):
     max_research_loops: int = Field(default=2, description="Maximum research loops")
     research_loop_count: int = Field(default=0, description="Current research loop")
     reasoning_model: Optional[str] = Field(default=None, description="Model for reasoning tasks")
+    source_quality_filter: Optional[str] = Field(default=None, description="Minimum source quality filter")
     
     def add_message(self, role: str, content: str):
         """Add a message to the conversation."""
@@ -109,6 +112,7 @@ class FinalizationInput(BaseModel):
     summaries: List[str] = Field(description="All research summaries")
     sources: List[Source] = Field(description="All gathered sources")
     current_date: str = Field(description="Current date for context")
+    source_quality_filter: Optional[str] = Field(default=None, description="Minimum source quality filter: high, medium, low")
 
 
 class FinalizationOutput(BaseModel):

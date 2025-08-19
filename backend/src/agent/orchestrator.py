@@ -131,7 +131,8 @@ class ResearchOrchestrator:
         state = ResearchState(
             initial_search_query_count=kwargs.get('initial_search_query_count', 3),
             max_research_loops=kwargs.get('max_research_loops', 2),
-            reasoning_model=kwargs.get('reasoning_model')
+            reasoning_model=kwargs.get('reasoning_model'),
+            source_quality_filter=kwargs.get('source_quality_filter')
         )
         
         # Add initial user message
@@ -246,7 +247,8 @@ class ResearchOrchestrator:
             research_topic=self._get_research_topic(state.messages),
             summaries=state.web_research_results,
             sources=state.sources_gathered,
-            current_date=self._get_current_date()
+            current_date=self._get_current_date(),
+            source_quality_filter=getattr(state, 'source_quality_filter', None)
         )
         
         # Use reasoning_model override if provided, otherwise use default
