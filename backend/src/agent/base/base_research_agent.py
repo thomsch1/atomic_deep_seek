@@ -107,6 +107,7 @@ class InstructorBasedAgent(BaseResearchAgent[InputType, OutputType]):
                 raise ValueError("Agent configuration not properly initialized")
             
             response = self.agent_config.client.chat.completions.create(
+                model=self.config.query_generator_model,
                 messages=[{"role": "user", "content": prompt}],
                 response_model=response_model,
             )

@@ -12,9 +12,18 @@ from agent.prompts import answer_instructions
 class FinalizationAgent(InstructorBasedAgent[FinalizationInput, FinalizationOutput]):
     """Atomic agent for finalizing research answers."""
     
+    def __init__(self, config: Configuration, model_override: str = None):
+        """Initialize with optional model override."""
+        self.model_override = model_override
+        super().__init__(config)
+    
     def _initialize_agent_config(self) -> None:
         """Initialize the agent configuration."""
-        self.agent_config = self.config.create_answer_config()
+        if self.model_override:
+            # Create answer config with model override
+            self.agent_config = self.config.create_agent_config(self.model_override)
+        else:
+            self.agent_config = self.config.create_answer_config()
     
     @handle_agent_errors(context="finalization")
     def run(self, input_data: FinalizationInput) -> FinalizationOutput:

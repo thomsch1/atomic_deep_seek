@@ -19,7 +19,7 @@ export default defineConfig({
     proxy: {
       // Proxy API requests to the backend server
       "/api": {
-        target: process.env.VITE_API_TARGET || "http://localhost:8000",
+        target: process.env.VITE_API_TARGET || "http://localhost:2024",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''), // Remove /api prefix for backend
         configure: (proxy, options) => {
