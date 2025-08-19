@@ -112,8 +112,9 @@ class CitationFormatter:
                     marker_parts = []
                     for segment in segments:
                         label = segment.get('label', 'Source')
-                        short_url = segment.get('short_url', '#')
-                        marker_parts.append(f" [{label}]({short_url})")
+                        # Use the actual URL instead of short_url placeholder
+                        url = segment.get('url', segment.get('short_url', '#'))
+                        marker_parts.append(f" [{label}]({url})")
                     
                     if marker_parts:
                         citation_marker = "".join(marker_parts)
@@ -287,7 +288,8 @@ class CitationFormatter:
                 continue
         
         if citation_links:
-            citation_string = ", ".join(citation_links)
+            # Format with space before and proper spacing between citations
+            citation_string = " " + ", ".join(citation_links)
             # Insert citation at the validated end_index
             text = text[:end_index] + citation_string + text[end_index:]
         

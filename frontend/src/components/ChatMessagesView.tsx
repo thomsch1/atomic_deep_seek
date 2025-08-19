@@ -42,19 +42,41 @@ const mdComponents = {
       {children}
     </p>
   ),
-  a: ({ className, children, href, ...props }: MdComponentProps) => (
-    <Badge className="text-xs mx-0.5">
-      <a
-        className={cn("text-blue-400 hover:text-blue-300 text-xs", className)}
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        {...props}
-      >
-        {children}
-      </a>
-    </Badge>
-  ),
+  a: ({ className, children, href, ...props }: MdComponentProps) => {
+    // Check if this is a citation link (contains only numbers or numbers with commas/spaces)
+    const isCitation = typeof children === 'string' && /^[\d,\s]+$/.test(children.trim());
+    
+    if (isCitation) {
+      // Render citations as simple superscript links without badges
+      return (
+        <a
+          className={cn("text-blue-400 hover:text-blue-300 text-xs no-underline", className)}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ textDecoration: 'none' }}
+          {...props}
+        >
+          <sup>[{children}]</sup>
+        </a>
+      );
+    }
+    
+    // Render regular links with badges
+    return (
+      <Badge className="text-xs mx-0.5">
+        <a
+          className={cn("text-blue-400 hover:text-blue-300 text-xs", className)}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          {...props}
+        >
+          {children}
+        </a>
+      </Badge>
+    );
+  },
   ul: ({ className, children, ...props }: MdComponentProps) => (
     <ul className={cn("list-disc pl-6 mb-3", className)} {...props}>
       {children}

@@ -218,7 +218,7 @@ class WebSearchAgent(BaseResearchAgent[WebSearchInput, WebSearchOutput]):
                 config=config
             )
             
-            # Step 5: Add citations to the response
+            # Step 5: Add citations to the response using citation formatter
             content_with_citations = self._add_citations_to_content(response.text, sources)
             
             return WebSearchOutput(
@@ -236,12 +236,22 @@ class WebSearchAgent(BaseResearchAgent[WebSearchInput, WebSearchOutput]):
         if not sources:
             return content
         
-        # Simple approach: add citations at the end
-        citations_text = "\n\nSources:\n"
-        for i, source in enumerate(sources):
-            citations_text += f"[{i+1}] [{source.title}]({source.url})\n"
+        # Add inline citation at the end of the content and references section
+        inline_citations = []
+        references_text = "\n\n## References\n"
         
-        return content + citations_text
+        for i, source in enumerate(sources):
+            inline_citations.append(f"[{i+1}]({source.url})")
+            references_text += f"{i+1}. [{source.title}]({source.url})\n"
+        
+        # Add inline citations at the end of the main content
+        if inline_citations:
+            citation_string = " " + ", ".join(inline_citations)
+            content_with_inline = content.rstrip() + citation_string
+        else:
+            content_with_inline = content
+        
+        return content_with_inline + references_text
     
     def _create_citation_objects(self, sources: List[Source]) -> List[Citation]:
         """Create citation objects from sources."""
