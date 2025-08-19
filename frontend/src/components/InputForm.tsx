@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SquarePen, Brain, Send, StopCircle, Zap, Cpu } from "lucide-react";
+import { SquarePen, Brain, Send, StopCircle, Zap, Cpu, Shield } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -12,7 +12,7 @@ import {
 
 // Updated InputFormProps
 interface InputFormProps {
-  onSubmit: (inputValue: string, effort: string, model: string) => void;
+  onSubmit: (inputValue: string, effort: string, model: string, sourceQuality: string) => void;
   onCancel: () => void;
   isLoading: boolean;
   hasHistory: boolean;
@@ -27,11 +27,12 @@ export const InputForm: React.FC<InputFormProps> = ({
   const [internalInputValue, setInternalInputValue] = useState("");
   const [effort, setEffort] = useState("medium");
   const [model, setModel] = useState("gemini-2.5-flash");
+  const [sourceQuality, setSourceQuality] = useState("any");
 
   const handleInternalSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!internalInputValue.trim()) return;
-    onSubmit(internalInputValue, effort, model);
+    onSubmit(internalInputValue, effort, model, sourceQuality);
     setInternalInputValue("");
   };
 
@@ -157,6 +158,43 @@ export const InputForm: React.FC<InputFormProps> = ({
                 >
                   <div className="flex items-center">
                     <Cpu className="h-4 w-4 mr-2 text-purple-400" /> 2.5 Pro
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-row gap-2 bg-neutral-700 border-neutral-600 text-neutral-300 focus:ring-neutral-500 rounded-xl rounded-t-sm pl-2  max-w-[100%] sm:max-w-[90%]">
+            <div className="flex flex-row items-center text-sm ml-2">
+              <Shield className="h-4 w-4 mr-2" />
+              Quality
+            </div>
+            <Select value={sourceQuality} onValueChange={setSourceQuality}>
+              <SelectTrigger className="w-[130px] bg-transparent border-none cursor-pointer">
+                <SelectValue placeholder="Quality" />
+              </SelectTrigger>
+              <SelectContent className="bg-neutral-700 border-neutral-600 text-neutral-300 cursor-pointer">
+                <SelectItem
+                  value="any"
+                  className="hover:bg-neutral-600 focus:bg-neutral-600 cursor-pointer"
+                >
+                  <div className="flex items-center">
+                    <Shield className="h-4 w-4 mr-2 text-gray-400" /> Any Quality
+                  </div>
+                </SelectItem>
+                <SelectItem
+                  value="medium"
+                  className="hover:bg-neutral-600 focus:bg-neutral-600 cursor-pointer"
+                >
+                  <div className="flex items-center">
+                    <Shield className="h-4 w-4 mr-2 text-blue-400" /> Medium+
+                  </div>
+                </SelectItem>
+                <SelectItem
+                  value="high"
+                  className="hover:bg-neutral-600 focus:bg-neutral-600 cursor-pointer"
+                >
+                  <div className="flex items-center">
+                    <Shield className="h-4 w-4 mr-2 text-green-400" /> High Only
                   </div>
                 </SelectItem>
               </SelectContent>

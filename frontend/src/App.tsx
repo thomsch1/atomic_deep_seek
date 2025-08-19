@@ -50,32 +50,28 @@ export default function App() {
     }
   }, [messages, isLoading, processedEventsTimeline]);
 
-  // Helper function to map effort levels (preserve original logic + add source quality)
+  // Helper function to map effort levels to research parameters
   const mapEffortToParams = (effort: string) => {
     switch (effort) {
       case "low":
         return { 
           initial_search_query_count: 1, 
-          max_research_loops: 1,
-          source_quality_filter: null  // No source filtering for low effort
+          max_research_loops: 1
         };
       case "medium":
         return { 
           initial_search_query_count: 3, 
-          max_research_loops: 3,
-          source_quality_filter: "medium"  // Medium quality sources and above
+          max_research_loops: 3
         };
       case "high":
         return { 
           initial_search_query_count: 5, 
-          max_research_loops: 10,
-          source_quality_filter: "high"  // Only high quality sources
+          max_research_loops: 10
         };
       default:
         return { 
           initial_search_query_count: 3, 
-          max_research_loops: 2,
-          source_quality_filter: null
+          max_research_loops: 2
         };
     }
   };
@@ -114,7 +110,7 @@ export default function App() {
   };
 
   const handleSubmit = useCallback(
-    async (submittedInputValue: string, effort: string, model: string) => {
+    async (submittedInputValue: string, effort: string, model: string, sourceQuality: string) => {
       if (!submittedInputValue.trim()) return;
       
       setIsLoading(true);
@@ -132,8 +128,11 @@ export default function App() {
       setMessages(newMessages);
       
       try {
-        // Convert effort to parameters (including source quality filter)
-        const { initial_search_query_count, max_research_loops, source_quality_filter } = mapEffortToParams(effort);
+        // Convert effort to parameters (excluding source quality filter)
+        const { initial_search_query_count, max_research_loops } = mapEffortToParams(effort);
+        
+        // Use explicit source quality selection, with fallback to effort-based mapping
+        const effectiveSourceQuality = sourceQuality === "any" ? undefined : sourceQuality;
         
         // Call backend
         const response = await api.conductResearch({
@@ -141,7 +140,7 @@ export default function App() {
           initial_search_query_count,
           max_research_loops,
           reasoning_model: model,
-          source_quality_filter
+          source_quality_filter: effectiveSourceQuality
         });
         
         // Create AI response message
