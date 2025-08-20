@@ -267,7 +267,7 @@ interface ChatMessagesViewProps {
   messages: Message[];
   isLoading: boolean;
   scrollAreaRef: React.RefObject<HTMLDivElement | null>;
-  onSubmit: (inputValue: string, effort: string, model: string, sourceQuality: string) => void;
+  onSubmit: (inputValue: string, effort: string, model: string, sourceQuality: string, enhancedFiltering?: boolean, qualityThreshold?: number) => void;
   onCancel: () => void;
   liveActivityEvents: ProcessedEvent[];
   historicalActivities: Record<string, ProcessedEvent[]>;

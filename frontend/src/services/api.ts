@@ -31,6 +31,8 @@ export interface ResearchRequest {
   max_research_loops?: number;
   reasoning_model?: string;
   source_quality_filter?: string;
+  enhanced_filtering?: boolean;
+  quality_threshold?: number;
 }
 
 export interface ResearchResponse {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SquarePen, Brain, Send, StopCircle, Zap, Cpu, Shield, HelpCircle } from "lucide-react";
+import { SquarePen, Brain, Send, StopCircle, Zap, Cpu, Shield, HelpCircle, Settings } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -18,7 +18,7 @@ import {
 
 // Updated InputFormProps
 interface InputFormProps {
-  onSubmit: (inputValue: string, effort: string, model: string, sourceQuality: string) => void;
+  onSubmit: (inputValue: string, effort: string, model: string, sourceQuality: string, enhancedFiltering?: boolean, qualityThreshold?: number) => void;
   onCancel: () => void;
   isLoading: boolean;
   hasHistory: boolean;
@@ -34,6 +34,8 @@ export const InputForm: React.FC<InputFormProps> = ({
   const [effort, setEffort] = useState("medium");
   const [model, setModel] = useState("gemini-2.5-flash");
   const [sourceQuality, setSourceQuality] = useState("any");
+  const [enhancedFiltering, setEnhancedFiltering] = useState(false);
+  const [qualityThreshold, setQualityThreshold] = useState(0.6);
 
   // Quality descriptions for user transparency
   const qualityDescriptions = {
@@ -63,7 +65,7 @@ export const InputForm: React.FC<InputFormProps> = ({
   const handleInternalSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!internalInputValue.trim()) return;
-    onSubmit(internalInputValue, effort, model, sourceQuality);
+    onSubmit(internalInputValue, effort, model, sourceQuality, enhancedFiltering, qualityThreshold);
     setInternalInputValue("");
   };
 
@@ -248,6 +250,76 @@ export const InputForm: React.FC<InputFormProps> = ({
               </Select>
             </div>
           </TooltipProvider>
+          
+          {/* Enhanced Filtering Toggle */}
+          <TooltipProvider>
+            <div className="flex flex-row items-center gap-2 bg-neutral-700 border-neutral-600 text-neutral-300 focus:ring-neutral-500 rounded-xl rounded-t-sm pl-2 pr-2 py-1 max-w-[100%] sm:max-w-[90%]">
+              <div className="flex items-center text-sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Enhanced Filtering
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-3 w-3 ml-1 text-neutral-500 hover:text-neutral-300" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <div className="space-y-2">
+                      <div className="font-semibold">Enhanced Filtering</div>
+                      <div className="text-xs">
+                        Provides detailed quality scores for sources and shows which sources were filtered out for transparency
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEnhancedFiltering(!enhancedFiltering)}
+                className={`ml-auto ${enhancedFiltering 
+                  ? 'bg-blue-600 border-blue-500 text-white hover:bg-blue-700' 
+                  : 'bg-transparent border-neutral-600 text-neutral-300 hover:bg-neutral-600'
+                }`}
+              >
+                {enhancedFiltering ? 'ON' : 'OFF'}
+              </Button>
+            </div>
+          </TooltipProvider>
+
+          {/* Quality Threshold Slider - Only shown when enhanced filtering is enabled */}
+          {enhancedFiltering && (
+            <TooltipProvider>
+              <div className="flex flex-row items-center gap-2 bg-neutral-700 border-neutral-600 text-neutral-300 focus:ring-neutral-500 rounded-xl rounded-t-sm pl-2 pr-2 py-1 max-w-[100%] sm:max-w-[90%]">
+                <div className="flex items-center text-sm min-w-0">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Quality Threshold: {qualityThreshold.toFixed(1)}
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <HelpCircle className="h-3 w-3 ml-1 text-neutral-500 hover:text-neutral-300" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-2">
+                        <div className="font-semibold">Quality Threshold</div>
+                        <div className="text-xs">
+                          Sources with quality scores below this threshold will be filtered out but still shown for transparency
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <div className="flex-1 ml-2 mr-2">
+                  <input
+                    type="range"
+                    min="0.1"
+                    max="1.0"
+                    step="0.1"
+                    value={qualityThreshold}
+                    onChange={(e) => setQualityThreshold(parseFloat(e.target.value))}
+                    className="w-full h-2 bg-neutral-600 rounded-lg appearance-none cursor-pointer slider"
+                  />
+                </div>
+              </div>
+            </TooltipProvider>
+          )}
         </div>
         {hasHistory && (
           <Button

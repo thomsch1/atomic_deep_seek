@@ -4,10 +4,11 @@ Agent for finalizing research answers with proper citations.
 
 from typing import List
 from agent.base import InstructorBasedAgent, handle_agent_errors, safe_format_template
-from agent.state import FinalizationInput, FinalizationOutput, Source
+from agent.state import FinalizationInput, FinalizationOutput, Source, QualitySummary
 from agent.configuration import Configuration
 from agent.prompts import answer_instructions
 from agent.source_classifier import SourceClassifier
+from agent.quality_validator import quality_validator
 
 
 class FinalizationAgent(InstructorBasedAgent[FinalizationInput, FinalizationOutput]):
@@ -34,11 +35,25 @@ class FinalizationAgent(InstructorBasedAgent[FinalizationInput, FinalizationOutp
         if not self._validate_input(input_data):
             return self._create_fallback_response(input_data, "invalid input")
         
-        # Classify and optionally filter sources
-        classified_sources = self._classify_and_filter_sources(
-            input_data.sources, 
-            input_data.source_quality_filter
-        )
+        # Classify and optionally filter sources using appropriate method
+        if input_data.enhanced_filtering:
+            filtering_result = self._classify_and_filter_sources_enhanced(
+                input_data.sources, 
+                input_data.source_quality_filter,
+                input_data.quality_threshold
+            )
+            classified_sources = filtering_result["included"]
+            filtered_sources = filtering_result["filtered"]
+            quality_summary = filtering_result["quality_summary"]
+            filtering_applied = len(filtered_sources) > 0
+        else:
+            classified_sources = self._classify_and_filter_sources(
+                input_data.sources, 
+                input_data.source_quality_filter
+            )
+            filtered_sources = []
+            quality_summary = None
+            filtering_applied = len(classified_sources) < len(input_data.sources)
         
         # Create modified input with classified sources for downstream processing
         modified_input = FinalizationInput(
@@ -46,7 +61,9 @@ class FinalizationAgent(InstructorBasedAgent[FinalizationInput, FinalizationOutp
             summaries=input_data.summaries,
             sources=classified_sources,
             current_date=input_data.current_date,
-            source_quality_filter=input_data.source_quality_filter
+            source_quality_filter=input_data.source_quality_filter,
+            enhanced_filtering=input_data.enhanced_filtering,
+            quality_threshold=input_data.quality_threshold
         )
         
         # Format the prompt using answer instructions
@@ -67,6 +84,19 @@ class FinalizationAgent(InstructorBasedAgent[FinalizationInput, FinalizationOutp
         if response is not None:
             # Ensure response uses classified sources
             response.used_sources = [s for s in response.used_sources if s in classified_sources]
+            
+            # Add transparency information for enhanced filtering
+            if input_data.enhanced_filtering:
+                response.filtered_sources = filtered_sources
+                response.quality_summary = QualitySummary(
+                    total_sources=quality_summary["total_sources"],
+                    included_sources=quality_summary["included_sources"],
+                    filtered_sources=quality_summary["filtered_sources"],
+                    average_quality_score=quality_summary["average_quality_score"],
+                    quality_threshold=quality_summary["quality_threshold"]
+                )
+                response.filtering_applied = filtering_applied
+            
             return response
         else:
             return self._create_fallback_response(modified_input, "LLM call failed")
@@ -145,3 +175,45 @@ class FinalizationAgent(InstructorBasedAgent[FinalizationInput, FinalizationOutp
                 classified_sources.append(source)
         
         return classified_sources
+    
+    def _classify_and_filter_sources_enhanced(self, sources: List[Source], 
+                                            source_quality_filter: str = None,
+                                            quality_threshold: float = None) -> dict:
+        """Enhanced source classification and filtering using graduated quality scores."""
+        if not sources:
+            return {
+                "included": [],
+                "filtered": [],
+                "quality_summary": {
+                    "total_sources": 0,
+                    "included_sources": 0,
+                    "filtered_sources": 0,
+                    "average_quality_score": 0.0,
+                    "quality_threshold": quality_threshold or 0.0
+                }
+            }
+        
+        # First apply basic classification for compatibility
+        classified_sources = []
+        for source in sources:
+            try:
+                # Classify the source using existing method
+                classification = self.source_classifier.classify_source(source.url)
+                
+                # Update source with classification data
+                source.source_credibility = classification.get('source_credibility')
+                source.domain_type = classification.get('domain_type')
+                
+                classified_sources.append(source)
+                    
+            except Exception as e:
+                # If classification fails, include the source without classification
+                print(f"Warning: Failed to classify source {source.url}: {e}")
+                classified_sources.append(source)
+        
+        # Apply enhanced graduated filtering
+        return quality_validator.classify_and_filter_sources_graduated(
+            classified_sources,
+            source_quality_filter,
+            quality_threshold
+        )

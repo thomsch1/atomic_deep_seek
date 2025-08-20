@@ -118,7 +118,7 @@ export default function App() {
   };
 
   const handleSubmit = useCallback(
-    async (submittedInputValue: string, effort: string, model: string, sourceQuality: string) => {
+    async (submittedInputValue: string, effort: string, model: string, sourceQuality: string, enhancedFiltering?: boolean, qualityThreshold?: number) => {
       if (!submittedInputValue.trim()) return;
       
       setIsLoading(true);
@@ -148,7 +148,9 @@ export default function App() {
           initial_search_query_count,
           max_research_loops,
           reasoning_model: model,
-          source_quality_filter: effectiveSourceQuality
+          source_quality_filter: effectiveSourceQuality,
+          enhanced_filtering: enhancedFiltering,
+          quality_threshold: qualityThreshold
         });
         
         // Create AI response message

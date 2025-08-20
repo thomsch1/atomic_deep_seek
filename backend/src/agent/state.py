@@ -115,6 +115,8 @@ class FinalizationInput(BaseModel):
     sources: List[Source] = Field(description="All gathered sources")
     current_date: str = Field(description="Current date for context")
     source_quality_filter: Optional[str] = Field(default=None, description="Minimum source quality filter: high, medium, low")
+    enhanced_filtering: bool = Field(default=False, description="Enable enhanced filtering with graduated quality scores")
+    quality_threshold: Optional[float] = Field(default=None, description="Custom quality threshold for enhanced filtering (0.0-1.0)")
 
 
 class QualityMetrics(BaseModel):

@@ -5,7 +5,9 @@ interface WelcomeScreenProps {
     submittedInputValue: string,
     effort: string,
     model: string,
-    sourceQuality: string
+    sourceQuality: string,
+    enhancedFiltering?: boolean,
+    qualityThreshold?: number
   ) => void;
   onCancel: () => void;
   isLoading: boolean;
