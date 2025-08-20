@@ -5,7 +5,6 @@ import { Shield, Eye, EyeOff, ChevronDown, ChevronUp, Info } from 'lucide-react'
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import {
   Tooltip,
@@ -52,13 +51,6 @@ export const QualityIndicator: React.FC<QualityIndicatorProps> = ({
 }) => {
   const [showFilteredSources, setShowFilteredSources] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const getQualityColor = (score: number): string => {
-    if (score >= 0.8) return 'text-green-400';
-    if (score >= 0.6) return 'text-blue-400';
-    if (score >= 0.4) return 'text-yellow-400';
-    return 'text-red-400';
-  };
 
   const getQualityIcon = (score: number): React.ReactNode => {
     if (score >= 0.8) return <Shield className="h-3 w-3 text-green-400" />;
