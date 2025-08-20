@@ -13,28 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 
-interface QualityMetrics {
-  source_credibility: number;
-  content_relevance: number;
-  information_completeness: number;
-  recency_score: number;
-  overall_score: number;
-}
-
-interface Source {
-  title: string;
-  url: string;
-  quality_score?: number;
-  quality_breakdown?: QualityMetrics;
-}
-
-interface QualitySummary {
-  total_sources: number;
-  included_sources: number;
-  filtered_sources: number;
-  average_quality_score: number;
-  quality_threshold: number;
-}
+import type { Source, QualitySummary } from '@/services/api';
 
 interface QualityIndicatorProps {
   usedSources: Source[];
@@ -69,7 +48,7 @@ export const QualityIndicator: React.FC<QualityIndicatorProps> = ({
 
   return (
     <TooltipProvider>
-      <div className="mt-4 p-3 bg-neutral-800 rounded-lg border border-neutral-700">
+      <div className="mt-4 mb-2 p-3 bg-neutral-800 rounded-lg border border-neutral-700 relative z-5">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Info className="h-4 w-4 text-neutral-400" />
@@ -225,19 +204,19 @@ const SourceItem: React.FC<SourceItemProps> = ({ source, isFiltered }) => {
                   <div className="space-y-1">
                     <div className="font-semibold">Quality Breakdown</div>
                     <div className="text-xs space-y-0.5">
-                      {source.quality_breakdown.credibility && (
+                      {source.quality_breakdown.credibility !== undefined && (
                         <div>Credibility: {formatScore(source.quality_breakdown.credibility)}%</div>
                       )}
-                      {source.quality_breakdown.relevance && (
+                      {source.quality_breakdown.relevance !== undefined && (
                         <div>Relevance: {formatScore(source.quality_breakdown.relevance)}%</div>
                       )}
-                      {source.quality_breakdown.completeness && (
+                      {source.quality_breakdown.completeness !== undefined && (
                         <div>Completeness: {formatScore(source.quality_breakdown.completeness)}%</div>
                       )}
-                      {source.quality_breakdown.recency && (
+                      {source.quality_breakdown.recency !== undefined && (
                         <div>Recency: {formatScore(source.quality_breakdown.recency)}%</div>
                       )}
-                      {source.quality_breakdown.authority && (
+                      {source.quality_breakdown.authority !== undefined && (
                         <div>Authority: {formatScore(source.quality_breakdown.authority)}%</div>
                       )}
                     </div>
