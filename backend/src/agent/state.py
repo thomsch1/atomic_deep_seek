@@ -11,6 +11,15 @@ class Message(BaseModel):
     content: str = Field(description="Content of the message")
 
 
+class QualityBreakdown(BaseModel):
+    """Detailed quality metrics breakdown."""
+    credibility: Optional[float] = Field(default=None, description="Source credibility score (0.0-1.0)")
+    relevance: Optional[float] = Field(default=None, description="Content relevance score (0.0-1.0)")
+    completeness: Optional[float] = Field(default=None, description="Information completeness score (0.0-1.0)")
+    recency: Optional[float] = Field(default=None, description="Information recency score (0.0-1.0)")
+    authority: Optional[float] = Field(default=None, description="Source authority score (0.0-1.0)")
+
+
 class Source(BaseModel):
     """Source information for citations."""
     title: str = Field(description="Title of the source")
@@ -20,7 +29,7 @@ class Source(BaseModel):
     source_credibility: Optional[str] = Field(default=None, description="Source credibility level: high, medium, low")
     domain_type: Optional[str] = Field(default=None, description="Domain type: academic, commercial, news, official, other")
     quality_score: Optional[float] = Field(default=None, description="Overall quality score (0.0-1.0)")
-    quality_breakdown: Optional[Dict[str, float]] = Field(default=None, description="Detailed quality metrics")
+    quality_breakdown: Optional[QualityBreakdown] = Field(default=None, description="Detailed quality metrics")
 
 
 class Citation(BaseModel):

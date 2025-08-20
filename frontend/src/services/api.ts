@@ -1,9 +1,9 @@
 export interface QualityMetrics {
-  source_credibility: number;
-  content_relevance: number;
-  information_completeness: number;
-  recency_score: number;
-  overall_score: number;
+  credibility?: number;
+  relevance?: number;
+  completeness?: number;
+  recency?: number;
+  authority?: number;
 }
 
 export interface Source {

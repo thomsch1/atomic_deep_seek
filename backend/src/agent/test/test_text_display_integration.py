@@ -188,20 +188,18 @@ class TestTextDisplayIntegration:
             # Quality breakdown should be assigned
             assert hasattr(source, 'quality_breakdown')
             assert source.quality_breakdown is not None
-            assert isinstance(source.quality_breakdown, dict)
+            from agent.state import QualityBreakdown
+            assert isinstance(source.quality_breakdown, QualityBreakdown)
             
-            # Required breakdown keys should exist
-            breakdown_keys = [
-                'source_credibility',
-                'content_relevance',
-                'information_completeness', 
-                'recency_score',
-                'overall_score'
-            ]
-            
-            for key in breakdown_keys:
-                assert key in source.quality_breakdown
-                assert 0.0 <= source.quality_breakdown[key] <= 1.0
+            # Required breakdown attributes should exist with valid values
+            assert source.quality_breakdown.credibility is not None
+            assert 0.0 <= source.quality_breakdown.credibility <= 1.0
+            assert source.quality_breakdown.relevance is not None
+            assert 0.0 <= source.quality_breakdown.relevance <= 1.0
+            assert source.quality_breakdown.completeness is not None  
+            assert 0.0 <= source.quality_breakdown.completeness <= 1.0
+            assert source.quality_breakdown.recency is not None
+            assert 0.0 <= source.quality_breakdown.recency <= 1.0
                 
     def test_quality_thresholds_custom_values(self):
         """Test custom quality thresholds."""

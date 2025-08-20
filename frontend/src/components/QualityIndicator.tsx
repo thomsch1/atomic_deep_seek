@@ -225,10 +225,21 @@ const SourceItem: React.FC<SourceItemProps> = ({ source, isFiltered }) => {
                   <div className="space-y-1">
                     <div className="font-semibold">Quality Breakdown</div>
                     <div className="text-xs space-y-0.5">
-                      <div>Credibility: {formatScore(source.quality_breakdown.source_credibility)}%</div>
-                      <div>Relevance: {formatScore(source.quality_breakdown.content_relevance)}%</div>
-                      <div>Completeness: {formatScore(source.quality_breakdown.information_completeness)}%</div>
-                      <div>Recency: {formatScore(source.quality_breakdown.recency_score)}%</div>
+                      {source.quality_breakdown.credibility && (
+                        <div>Credibility: {formatScore(source.quality_breakdown.credibility)}%</div>
+                      )}
+                      {source.quality_breakdown.relevance && (
+                        <div>Relevance: {formatScore(source.quality_breakdown.relevance)}%</div>
+                      )}
+                      {source.quality_breakdown.completeness && (
+                        <div>Completeness: {formatScore(source.quality_breakdown.completeness)}%</div>
+                      )}
+                      {source.quality_breakdown.recency && (
+                        <div>Recency: {formatScore(source.quality_breakdown.recency)}%</div>
+                      )}
+                      {source.quality_breakdown.authority && (
+                        <div>Authority: {formatScore(source.quality_breakdown.authority)}%</div>
+                      )}
                     </div>
                   </div>
                 </TooltipContent>

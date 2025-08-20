@@ -584,8 +584,15 @@ class QualityValidator:
             quality_metrics = self.calculate_user_facing_quality_score(source, "")
             
             # Update source with quality information
+            from agent.state import QualityBreakdown
             source.quality_score = quality_metrics['overall_score']
-            source.quality_breakdown = quality_metrics
+            source.quality_breakdown = QualityBreakdown(
+                credibility=quality_metrics.get('source_credibility'),
+                relevance=quality_metrics.get('content_relevance'),
+                completeness=quality_metrics.get('information_completeness'),
+                recency=quality_metrics.get('recency_score'),
+                authority=None  # Not calculated by current method
+            )
             
             sources_with_scores.append(source)
         
