@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Message } from "@/services/api";
+import type { Message, Source, QualitySummary } from "@/services/api";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Copy, CopyCheck } from "lucide-react";
 import { InputForm } from "@/components/InputForm";
@@ -12,6 +12,7 @@ import {
   ActivityTimeline,
   ProcessedEvent,
 } from "@/components/ActivityTimeline"; // Assuming ActivityTimeline is in the same dir or adjust path
+import { QualityIndicator } from "@/components/QualityIndicator";
 
 // Markdown component props type from former ReportView
 type MdComponentProps = {
@@ -190,6 +191,12 @@ interface AiMessageBubbleProps {
   mdComponents: typeof mdComponents;
   handleCopy: (text: string, messageId: string) => void;
   copiedMessageId: string | null;
+  qualityData?: {
+    usedSources: Source[];
+    filteredSources: Source[];
+    qualitySummary?: QualitySummary;
+    filteringApplied: boolean;
+  };
 }
 
 // AiMessageBubble Component
@@ -202,6 +209,7 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
   mdComponents,
   handleCopy,
   copiedMessageId,
+  qualityData,
 }) => {
   // Determine which activity events to show and if it's for a live loading message
   const activityForThisBubble =
@@ -223,6 +231,17 @@ const AiMessageBubble: React.FC<AiMessageBubbleProps> = ({
           ? message.content
           : JSON.stringify(message.content)}
       </ReactMarkdown>
+      
+      {/* Quality Indicator */}
+      {qualityData && (
+        <QualityIndicator
+          usedSources={qualityData.usedSources}
+          filteredSources={qualityData.filteredSources}
+          qualitySummary={qualityData.qualitySummary}
+          filteringApplied={qualityData.filteringApplied}
+        />
+      )}
+      
       <Button
         variant="default"
         className={`cursor-pointer bg-neutral-700 border-neutral-600 text-neutral-300 self-end ${
@@ -252,6 +271,12 @@ interface ChatMessagesViewProps {
   onCancel: () => void;
   liveActivityEvents: ProcessedEvent[];
   historicalActivities: Record<string, ProcessedEvent[]>;
+  messageQualityData: Record<string, {
+    usedSources: Source[];
+    filteredSources: Source[];
+    qualitySummary?: QualitySummary;
+    filteringApplied: boolean;
+  }>;
 }
 
 export function ChatMessagesView({
@@ -262,6 +287,7 @@ export function ChatMessagesView({
   onCancel,
   liveActivityEvents,
   historicalActivities,
+  messageQualityData,
 }: ChatMessagesViewProps) {
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
 
@@ -302,6 +328,7 @@ export function ChatMessagesView({
                       mdComponents={mdComponents}
                       handleCopy={handleCopy}
                       copiedMessageId={copiedMessageId}
+                      qualityData={messageQualityData[message.id!]}
                     />
                   )}
                 </div>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { SquarePen, Brain, Send, StopCircle, Zap, Cpu, Shield } from "lucide-react";
+import { SquarePen, Brain, Send, StopCircle, Zap, Cpu, Shield, HelpCircle } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -9,6 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Updated InputFormProps
 interface InputFormProps {
@@ -28,6 +34,31 @@ export const InputForm: React.FC<InputFormProps> = ({
   const [effort, setEffort] = useState("medium");
   const [model, setModel] = useState("gemini-2.5-flash");
   const [sourceQuality, setSourceQuality] = useState("any");
+
+  // Quality descriptions for user transparency
+  const qualityDescriptions = {
+    "any": {
+      title: "Any Quality",
+      description: "Include all sources (fastest, most comprehensive)",
+      expectedSources: "8-15 sources",
+      speed: "Fastest",
+      icon: <Shield className="h-4 w-4 mr-2 text-gray-400" />
+    },
+    "medium": {
+      title: "Medium+",
+      description: "Filter low-credibility sources (balanced approach)",
+      expectedSources: "5-10 sources",
+      speed: "Balanced",
+      icon: <Shield className="h-4 w-4 mr-2 text-blue-400" />
+    },
+    "high": {
+      title: "High Only",
+      description: "Only high-credibility sources (slowest, most reliable)",
+      expectedSources: "2-6 sources",
+      speed: "Slowest",
+      icon: <Shield className="h-4 w-4 mr-2 text-green-400" />
+    }
+  };
 
   const handleInternalSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -163,43 +194,60 @@ export const InputForm: React.FC<InputFormProps> = ({
               </SelectContent>
             </Select>
           </div>
-          <div className="flex flex-row gap-2 bg-neutral-700 border-neutral-600 text-neutral-300 focus:ring-neutral-500 rounded-xl rounded-t-sm pl-2  max-w-[100%] sm:max-w-[90%]">
-            <div className="flex flex-row items-center text-sm ml-2">
-              <Shield className="h-4 w-4 mr-2" />
-              Quality
+          <TooltipProvider>
+            <div className="flex flex-row gap-2 bg-neutral-700 border-neutral-600 text-neutral-300 focus:ring-neutral-500 rounded-xl rounded-t-sm pl-2  max-w-[100%] sm:max-w-[90%]">
+              <div className="flex flex-row items-center text-sm ml-2">
+                <Shield className="h-4 w-4 mr-2" />
+                Quality
+                <Tooltip>
+                  <TooltipTrigger>
+                    <HelpCircle className="h-3 w-3 ml-1 text-neutral-500 hover:text-neutral-300" />
+                  </TooltipTrigger>
+                  <TooltipContent className="max-w-xs">
+                    <div className="space-y-2">
+                      <div className="font-semibold">Source Quality Filtering</div>
+                      <div className="text-xs space-y-1">
+                        <div><strong>Any:</strong> All sources included</div>
+                        <div><strong>Medium+:</strong> Filters low-quality sources</div>
+                        <div><strong>High:</strong> Only authoritative sources</div>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <Select value={sourceQuality} onValueChange={setSourceQuality}>
+                <SelectTrigger className="w-[130px] bg-transparent border-none cursor-pointer">
+                  <SelectValue placeholder="Quality" />
+                </SelectTrigger>
+                <SelectContent className="bg-neutral-700 border-neutral-600 text-neutral-300 cursor-pointer">
+                  {Object.entries(qualityDescriptions).map(([key, desc]) => (
+                    <Tooltip key={key}>
+                      <TooltipTrigger asChild>
+                        <SelectItem
+                          value={key}
+                          className="hover:bg-neutral-600 focus:bg-neutral-600 cursor-pointer"
+                        >
+                          <div className="flex items-center">
+                            {desc.icon} {desc.title}
+                          </div>
+                        </SelectItem>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-sm">
+                        <div className="space-y-1">
+                          <div className="font-semibold">{desc.title}</div>
+                          <div className="text-xs text-neutral-300">{desc.description}</div>
+                          <div className="text-xs text-neutral-400 space-y-0.5">
+                            <div>Expected: {desc.expectedSources}</div>
+                            <div>Speed: {desc.speed}</div>
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-            <Select value={sourceQuality} onValueChange={setSourceQuality}>
-              <SelectTrigger className="w-[130px] bg-transparent border-none cursor-pointer">
-                <SelectValue placeholder="Quality" />
-              </SelectTrigger>
-              <SelectContent className="bg-neutral-700 border-neutral-600 text-neutral-300 cursor-pointer">
-                <SelectItem
-                  value="any"
-                  className="hover:bg-neutral-600 focus:bg-neutral-600 cursor-pointer"
-                >
-                  <div className="flex items-center">
-                    <Shield className="h-4 w-4 mr-2 text-gray-400" /> Any Quality
-                  </div>
-                </SelectItem>
-                <SelectItem
-                  value="medium"
-                  className="hover:bg-neutral-600 focus:bg-neutral-600 cursor-pointer"
-                >
-                  <div className="flex items-center">
-                    <Shield className="h-4 w-4 mr-2 text-blue-400" /> Medium+
-                  </div>
-                </SelectItem>
-                <SelectItem
-                  value="high"
-                  className="hover:bg-neutral-600 focus:bg-neutral-600 cursor-pointer"
-                >
-                  <div className="flex items-center">
-                    <Shield className="h-4 w-4 mr-2 text-green-400" /> High Only
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          </TooltipProvider>
         </div>
         {hasHistory && (
           <Button

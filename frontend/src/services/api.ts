@@ -1,3 +1,11 @@
+export interface QualityMetrics {
+  source_credibility: number;
+  content_relevance: number;
+  information_completeness: number;
+  recency_score: number;
+  overall_score: number;
+}
+
 export interface Source {
   title: string;
   url: string;
@@ -5,6 +13,16 @@ export interface Source {
   content?: string;
   source_credibility?: string;
   domain_type?: string;
+  quality_score?: number;
+  quality_breakdown?: QualityMetrics;
+}
+
+export interface QualitySummary {
+  total_sources: number;
+  included_sources: number;
+  filtered_sources: number;
+  average_quality_score: number;
+  quality_threshold: number;
 }
 
 export interface ResearchRequest {
@@ -18,6 +36,9 @@ export interface ResearchRequest {
 export interface ResearchResponse {
   final_answer: string;
   sources: Source[];
+  filtered_sources?: Source[];
+  quality_summary?: QualitySummary;
+  filtering_applied?: boolean;
   research_loops_executed: number;
   total_queries: number;
   performance_profile?: any; // Backend performance data

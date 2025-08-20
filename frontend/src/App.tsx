@@ -3,7 +3,7 @@ import { ProcessedEvent } from "@/components/ActivityTimeline";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
 import { ChatMessagesView } from "@/components/ChatMessagesView";
 import { Button } from "@/components/ui/button";
-import { AtomicAgentAPI, Message, ResearchResponse } from "@/services/api";
+import { AtomicAgentAPI, Message, ResearchResponse, QualitySummary, Source } from "@/services/api";
 
 export default function App() {
   const [processedEventsTimeline, setProcessedEventsTimeline] = useState<
@@ -11,6 +11,14 @@ export default function App() {
   >([]);
   const [historicalActivities, setHistoricalActivities] = useState<
     Record<string, ProcessedEvent[]>
+  >({});
+  const [messageQualityData, setMessageQualityData] = useState<
+    Record<string, {
+      usedSources: Source[];
+      filteredSources: Source[];
+      qualitySummary?: QualitySummary;
+      filteringApplied: boolean;
+    }>
   >({});
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const hasFinalizeEventOccurredRef = useRef(false);
@@ -164,6 +172,17 @@ export default function App() {
           [aiMessage.id]: events
         }));
 
+        // Store quality data for this message
+        setMessageQualityData(prev => ({
+          ...prev,
+          [aiMessage.id]: {
+            usedSources: response.sources || [],
+            filteredSources: response.filtered_sources || [],
+            qualitySummary: response.quality_summary,
+            filteringApplied: response.filtering_applied || false
+          }
+        }));
+
         hasFinalizeEventOccurredRef.current = true;
         
       } catch (error: any) {
@@ -218,6 +237,7 @@ export default function App() {
               onCancel={handleCancel}
               liveActivityEvents={processedEventsTimeline}
               historicalActivities={historicalActivities}
+              messageQualityData={messageQualityData}
             />
           )}
       </main>

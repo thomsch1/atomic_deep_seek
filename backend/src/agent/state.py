@@ -19,6 +19,8 @@ class Source(BaseModel):
     label: Optional[str] = Field(default=None, description="Citation label")
     source_credibility: Optional[str] = Field(default=None, description="Source credibility level: high, medium, low")
     domain_type: Optional[str] = Field(default=None, description="Domain type: academic, commercial, news, official, other")
+    quality_score: Optional[float] = Field(default=None, description="Overall quality score (0.0-1.0)")
+    quality_breakdown: Optional[Dict[str, float]] = Field(default=None, description="Detailed quality metrics")
 
 
 class Citation(BaseModel):
@@ -115,10 +117,31 @@ class FinalizationInput(BaseModel):
     source_quality_filter: Optional[str] = Field(default=None, description="Minimum source quality filter: high, medium, low")
 
 
+class QualityMetrics(BaseModel):
+    """Quality metrics for sources and responses."""
+    source_credibility: float = Field(description="Source credibility score (0.0-1.0)")
+    content_relevance: float = Field(description="Content relevance score (0.0-1.0)")
+    information_completeness: float = Field(description="Information completeness score (0.0-1.0)")
+    recency_score: float = Field(description="Information recency score (0.0-1.0)")
+    overall_score: float = Field(description="Overall quality score (0.0-1.0)")
+
+
+class QualitySummary(BaseModel):
+    """Summary of quality filtering applied."""
+    total_sources: int = Field(description="Total sources found")
+    included_sources: int = Field(description="Sources included after filtering")
+    filtered_sources: int = Field(description="Sources filtered out")
+    average_quality_score: float = Field(description="Average quality score of included sources")
+    quality_threshold: float = Field(description="Quality threshold used for filtering")
+
+
 class FinalizationOutput(BaseModel):
     """Output from finalization agent."""
     final_answer: str = Field(description="Complete research answer")
     used_sources: List[Source] = Field(description="Sources cited in answer")
+    filtered_sources: List[Source] = Field(default_factory=list, description="Sources excluded by quality filter")
+    quality_summary: Optional[QualitySummary] = Field(default=None, description="Overall quality metrics")
+    filtering_applied: bool = Field(default=False, description="Whether any filtering occurred")
 
 
 class SearchStateOutput(BaseModel):

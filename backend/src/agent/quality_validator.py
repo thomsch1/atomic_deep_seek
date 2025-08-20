@@ -4,12 +4,13 @@ Provides automated testing and scoring for research quality and consistency.
 """
 
 import json
-import time
-from typing import Dict, Any, List, Optional, Union
+from typing import Dict, Any, List, Optional
 from dataclasses import dataclass, field
 from datetime import datetime
 import re
 import hashlib
+from urllib.parse import urlparse
+from agent.state import Source
 
 
 @dataclass
@@ -334,6 +335,283 @@ class QualityValidator:
             json.dump(report, f, indent=2, default=str)
         
         return filename
+    
+    def calculate_user_facing_quality_score(self, source: Source, query: str) -> Dict[str, float]:
+        """
+        Return granular quality metrics for user transparency:
+        - source_credibility: 0-1 (domain authority, https, etc.)
+        - content_relevance: 0-1 (how well it answers the query)
+        - information_completeness: 0-1 (depth and detail level)
+        - recency_score: 0-1 (how recent the information is)
+        """
+        # Source credibility based on domain and URL structure
+        credibility = self._calculate_source_credibility(source.url)
+        
+        # Content relevance based on title and query matching
+        relevance = self._calculate_content_relevance(source.title, query)
+        
+        # Information completeness based on title length and structure
+        completeness = self._calculate_information_completeness(source.title, source.url)
+        
+        # Recency score (basic implementation - could be enhanced with actual dates)
+        recency = self._calculate_recency_score(source.url, source.title)
+        
+        # Overall score weighted average
+        overall_score = (credibility * 0.3 + relevance * 0.3 + completeness * 0.25 + recency * 0.15)
+        
+        return {
+            'source_credibility': credibility,
+            'content_relevance': relevance,
+            'information_completeness': completeness,
+            'recency_score': recency,
+            'overall_score': overall_score
+        }
+    
+    def _calculate_source_credibility(self, url: str) -> float:
+        """Calculate source credibility based on domain characteristics."""
+        try:
+            parsed = urlparse(url)
+            domain = parsed.netloc.lower()
+            
+            # High credibility domains
+            if any(domain.endswith(suffix) for suffix in ['.edu', '.gov', '.org']):
+                base_score = 0.9
+            # Medium credibility news and established sites
+            elif any(domain.endswith(suffix) for suffix in ['.com', '.net']) and len(domain.split('.')) >= 2:
+                base_score = 0.7
+            # Unknown or potentially less credible
+            else:
+                base_score = 0.5
+            
+            # Boost for HTTPS
+            if parsed.scheme == 'https':
+                base_score += 0.1
+            
+            # Penalty for very long or suspicious domains
+            if len(domain) > 30 or domain.count('-') > 3:
+                base_score -= 0.2
+            
+            # Known high-quality domains
+            high_quality_domains = [
+                'wikipedia.org', 'reuters.com', 'bbc.com', 'nature.com',
+                'science.org', 'ncbi.nlm.nih.gov', 'who.int', 'cdc.gov'
+            ]
+            
+            if any(domain.endswith(hq_domain) for hq_domain in high_quality_domains):
+                base_score = 0.95
+            
+            return min(max(base_score, 0.0), 1.0)
+            
+        except Exception:
+            return 0.5  # Default moderate credibility if parsing fails
+    
+    def _calculate_content_relevance(self, title: str, query: str) -> float:
+        """Calculate how relevant the content is to the query."""
+        if not title or not query:
+            return 0.5
+        
+        # Extract key terms from query and title
+        query_terms = set(re.findall(r'\b\w{3,}\b', query.lower()))
+        title_terms = set(re.findall(r'\b\w{3,}\b', title.lower()))
+        
+        if not query_terms:
+            return 0.5
+        
+        # Calculate term overlap
+        overlap = len(query_terms.intersection(title_terms))
+        relevance_score = overlap / len(query_terms)
+        
+        # Boost for exact phrase matches
+        if query.lower() in title.lower():
+            relevance_score += 0.3
+        
+        # Boost for question type indicators
+        question_indicators = {
+            'what': ['definition', 'explanation', 'meaning'],
+            'how': ['tutorial', 'guide', 'method', 'steps'],
+            'why': ['reason', 'because', 'explanation'],
+            'when': ['date', 'time', 'history', 'timeline'],
+            'where': ['location', 'place', 'geography']
+        }
+        
+        query_lower = query.lower()
+        title_lower = title.lower()
+        
+        for question_word, indicators in question_indicators.items():
+            if question_word in query_lower:
+                if any(indicator in title_lower for indicator in indicators):
+                    relevance_score += 0.2
+                break
+        
+        return min(max(relevance_score, 0.0), 1.0)
+    
+    def _calculate_information_completeness(self, title: str, url: str) -> float:
+        """Estimate information completeness based on title and URL structure."""
+        if not title:
+            return 0.3
+        
+        base_score = 0.5
+        
+        # Title length indicator (longer often means more comprehensive)
+        title_length = len(title.split())
+        if title_length >= 8:
+            base_score += 0.2
+        elif title_length >= 5:
+            base_score += 0.1
+        elif title_length <= 2:
+            base_score -= 0.2
+        
+        # Look for completeness indicators in title
+        completeness_indicators = [
+            'complete', 'comprehensive', 'detailed', 'full', 'ultimate',
+            'guide', 'tutorial', 'handbook', 'reference', 'overview'
+        ]
+        
+        if any(indicator in title.lower() for indicator in completeness_indicators):
+            base_score += 0.3
+        
+        # URL structure indicators (deeper paths often mean more specific content)
+        try:
+            parsed = urlparse(url)
+            path_parts = [part for part in parsed.path.split('/') if part]
+            if len(path_parts) >= 3:
+                base_score += 0.1
+            elif len(path_parts) <= 1:
+                base_score -= 0.1
+        except Exception:
+            pass
+        
+        # Penalty for very short titles (likely incomplete)
+        if len(title) < 20:
+            base_score -= 0.2
+        
+        return min(max(base_score, 0.0), 1.0)
+    
+    def _calculate_recency_score(self, url: str, title: str) -> float:
+        """Estimate content recency based on URL patterns and title indicators."""
+        base_score = 0.6  # Default moderate recency
+        
+        # Look for year indicators in URL
+        current_year = datetime.now().year
+        years_pattern = r'\b(19|20)\d{2}\b'
+        
+        url_years = re.findall(years_pattern, url)
+        title_years = re.findall(years_pattern, title)
+        
+        all_years = []
+        for match in url_years + title_years:
+            try:
+                year = int(match + re.search(r'\d{2}', url + title).group())
+                if 1990 <= year <= current_year + 1:
+                    all_years.append(year)
+            except (ValueError, AttributeError):
+                continue
+        
+        if all_years:
+            latest_year = max(all_years)
+            years_ago = current_year - latest_year
+            
+            if years_ago <= 1:
+                base_score = 0.95
+            elif years_ago <= 2:
+                base_score = 0.8
+            elif years_ago <= 5:
+                base_score = 0.6
+            else:
+                base_score = 0.3
+        
+        # Look for recency indicators in title
+        recent_indicators = [
+            '2024', '2023', 'latest', 'recent', 'new', 'current',
+            'updated', 'breaking', 'today', 'this year'
+        ]
+        
+        if any(indicator in title.lower() for indicator in recent_indicators):
+            base_score += 0.2
+        
+        # Old indicators penalty
+        old_indicators = ['archive', 'historical', 'vintage', 'classic', 'old']
+        if any(indicator in title.lower() for indicator in old_indicators):
+            base_score -= 0.3
+        
+        return min(max(base_score, 0.0), 1.0)
+    
+    def classify_and_filter_sources_graduated(self, sources: List[Source], 
+                                             source_quality_filter: str = None,
+                                             quality_threshold: float = None) -> Dict[str, Any]:
+        """
+        Return both included and filtered sources with quality scores.
+        
+        Args:
+            sources: List of sources to classify
+            source_quality_filter: Quality filter level ('any', 'medium', 'high')
+            quality_threshold: Custom quality threshold (0.0-1.0)
+        
+        Returns:
+            {
+                "included": [high_quality_sources],
+                "filtered": [lower_quality_sources_with_scores],
+                "quality_summary": {"avg_score": 0.8, "total_sources": 10, ...}
+            }
+        """
+        if not sources:
+            return {
+                "included": [],
+                "filtered": [],
+                "quality_summary": {
+                    "total_sources": 0,
+                    "included_sources": 0,
+                    "filtered_sources": 0,
+                    "average_quality_score": 0.0,
+                    "quality_threshold": quality_threshold or 0.0
+                }
+            }
+        
+        # Determine quality threshold
+        if quality_threshold is not None:
+            threshold = quality_threshold
+        elif source_quality_filter == 'high':
+            threshold = 0.8
+        elif source_quality_filter == 'medium':
+            threshold = 0.6
+        else:  # 'any' or None
+            threshold = 0.0
+        
+        # Calculate quality scores for all sources
+        sources_with_scores = []
+        for source in sources:
+            # Use a default query for scoring if not available
+            quality_metrics = self.calculate_user_facing_quality_score(source, "")
+            
+            # Update source with quality information
+            source.quality_score = quality_metrics['overall_score']
+            source.quality_breakdown = quality_metrics
+            
+            sources_with_scores.append(source)
+        
+        # Separate included and filtered sources
+        included_sources = [s for s in sources_with_scores if s.quality_score >= threshold]
+        filtered_sources = [s for s in sources_with_scores if s.quality_score < threshold]
+        
+        # Calculate quality summary
+        if included_sources:
+            avg_score = sum(s.quality_score for s in included_sources) / len(included_sources)
+        else:
+            avg_score = 0.0
+        
+        quality_summary = {
+            "total_sources": len(sources),
+            "included_sources": len(included_sources),
+            "filtered_sources": len(filtered_sources),
+            "average_quality_score": avg_score,
+            "quality_threshold": threshold
+        }
+        
+        return {
+            "included": included_sources,
+            "filtered": filtered_sources,
+            "quality_summary": quality_summary
+        }
 
 
 # Global quality validator instance

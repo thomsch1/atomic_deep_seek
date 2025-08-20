@@ -105,6 +105,42 @@ class Configuration(BaseModel):
         metadata={"description": "Maximum size of connection pool."},
     )
     
+    # Quality Filtering Configuration
+    quality_transparency_enabled: bool = Field(
+        default=True,
+        metadata={"description": "Enable quality transparency and graduated filtering."},
+    )
+    
+    default_quality_threshold: float = Field(
+        default=0.6,
+        metadata={"description": "Default quality threshold for source filtering (0.0-1.0)."},
+    )
+    
+    enable_graduated_filtering: bool = Field(
+        default=True,
+        metadata={"description": "Enable graduated filtering instead of binary inclusion/exclusion."},
+    )
+    
+    max_filtered_sources_returned: int = Field(
+        default=5,
+        metadata={"description": "Maximum number of filtered sources to return for transparency."},
+    )
+    
+    quality_preference_learning: bool = Field(
+        default=True,
+        metadata={"description": "Enable learning user quality preferences over time."},
+    )
+    
+    # Quality threshold mappings for different filter levels
+    quality_thresholds: Dict[str, float] = Field(
+        default_factory=lambda: {
+            "any": 0.0,
+            "medium": 0.6, 
+            "high": 0.8
+        },
+        metadata={"description": "Quality threshold mappings for different filter levels."},
+    )
+    
     # Supported model names as per Google AI API documentation
     SUPPORTED_MODELS: ClassVar[set[str]] = {
         "gemini-2.5-pro",
@@ -144,6 +180,20 @@ class Configuration(BaseModel):
         """Validate rate limit RPM is positive."""
         if v <= 0:
             raise ValueError("Rate limit requests per minute must be positive")
+        return v
+    
+    @field_validator('default_quality_threshold')
+    def validate_quality_threshold(cls, v):
+        """Validate quality threshold is between 0.0 and 1.0."""
+        if not 0.0 <= v <= 1.0:
+            raise ValueError("Quality threshold must be between 0.0 and 1.0")
+        return v
+    
+    @field_validator('max_filtered_sources_returned')
+    def validate_max_filtered_sources(cls, v):
+        """Validate max filtered sources is non-negative."""
+        if v < 0:
+            raise ValueError("Max filtered sources must be non-negative")
         return v
 
     def create_agent_config(self, model_override: Optional[str] = None) -> AgentConfig:
@@ -204,6 +254,11 @@ class Configuration(BaseModel):
             'HTTP_TIMEOUT': 'HTTP request timeout (default: 30.0)',
             'HTTP_MAX_CONNECTIONS': 'Max HTTP connections (default: 100)',
             'HTTP_RETRIES': 'HTTP retry attempts (default: 3)',
+            'QUALITY_TRANSPARENCY_ENABLED': 'Enable quality transparency (default: true)',
+            'DEFAULT_QUALITY_THRESHOLD': 'Default quality threshold (default: 0.6)',
+            'ENABLE_GRADUATED_FILTERING': 'Enable graduated filtering (default: true)',
+            'MAX_FILTERED_SOURCES_RETURNED': 'Max filtered sources returned (default: 5)',
+            'QUALITY_PREFERENCE_LEARNING': 'Enable preference learning (default: true)',
         }
         
         status = {}
