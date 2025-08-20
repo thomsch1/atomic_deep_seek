@@ -303,7 +303,7 @@ export function ChatMessagesView({
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1 overflow-y-auto" ref={scrollAreaRef}>
-        <div className="p-4 md:p-6 space-y-2 max-w-4xl mx-auto pt-16">
+        <div className="p-4 md:p-6 space-y-2 max-w-4xl mx-auto pt-16 pb-32">
           {messages.map((message, index) => {
             const isLast = index === messages.length - 1;
             return (
@@ -360,12 +360,14 @@ export function ChatMessagesView({
             )}
         </div>
       </ScrollArea>
-      <InputForm
-        onSubmit={onSubmit}
-        isLoading={isLoading}
-        onCancel={onCancel}
-        hasHistory={messages.length > 0}
-      />
+      <div className="fixed bottom-4 right-2 sm:right-4 z-20 w-[calc(100vw-1rem)] sm:w-80 max-w-[calc(100vw-1rem)] sm:max-w-sm bg-neutral-800 border border-neutral-700 rounded-lg shadow-lg">
+        <InputForm
+          onSubmit={onSubmit}
+          isLoading={isLoading}
+          onCancel={onCancel}
+          hasHistory={messages.length > 0}
+        />
+      </div>
     </div>
   );
 }
